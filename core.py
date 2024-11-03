@@ -12,9 +12,8 @@ class Player:
     def draw_card(self, pile):
         self.hand.append(pile.draw_card())
     
-    def show_cards(self):
-        for card in self.hand:
-            print(card)
+    def get_cards(self):
+        return self.hand
 
 class Card:
 
