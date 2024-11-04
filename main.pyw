@@ -32,6 +32,7 @@ class DrawButton (Button):
 
 class CardImage (Image):
     def __init__(self, num, **kwargs):
+        self.num = num
         super().__init__(**kwargs)
 
 class BlackJackApp (App):
