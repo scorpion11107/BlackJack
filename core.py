@@ -2,8 +2,7 @@ from random import sample
 
 class Player:
 
-    def __init__ (self, name = "Player"):
-        self.n = name
+    def __init__ (self):
         self.hand = []
     
     def __repr__ (self):
@@ -38,7 +37,7 @@ class Pile:
         for i in num:
             for j in col:
                 l.append((i, j))
-        self.con = [Card(elt) for elt in sample(l, len(l))]
+        self.con = [Card(elt) for elt in sample(6*l, 6*len(l))]
     
     def __repr__ (self):
         return str(self.con)
