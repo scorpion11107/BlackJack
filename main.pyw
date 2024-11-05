@@ -6,19 +6,23 @@ from kivy.uix.button import Button
 from kivy.uix.image import Image
 from kivy.uix.label import Label
 
+from kivy.config import Config
+Config.set('graphics', 'width', '600')
+Config.set('graphics', 'height', '400')
+
 def player_draw_card(instance: Widget):
     global player, pile
     player.draw_card(pile)
 
-    show_cards(instance.parent)
+    draw_screen(instance.parent)
 
 def player_stop(instance: Widget):
     global is_playing
     is_playing = 0
 
-    show_cards(instance.parent)
+    draw_screen(instance.parent)
 
-def reset(instance: Widget):
+def restart_game(instance: Widget):
     global pile, player, is_playing, dealer
 
     pile = Pile()
@@ -31,13 +35,25 @@ def reset(instance: Widget):
     player.draw_card(pile)
     dealer.draw_card(pile)
 
-    show_cards(instance.parent)
+    draw_screen(instance.parent)
 
-def add_default_layout(window: Widget):
+def add_layout(window: Widget):
+    player_score = player.check_score()
+    if player_score > 21:
+        pass
+    elif player_score == 21:
+        if len(player.get_cards):
+            pass
+        else:
+            pass
+    else:
+        player_score_text = "Score: " + str(player_score)
+
     window.add_widget(BoutonPioche(text = "Tirer"))
     window.add_widget(BoutonReste(text = "Rester"))
     window.add_widget(BoutonRecommencer(text = "Nouvelle partie"))
     window.add_widget(PlayerHandLabel(text = "Main du joueur : "))
+    window.add_widget(PlayerScoreLabel(text = player_score_text))
     window.add_widget(DealerHandLabel(text = "Main du croupier : "))
 
 def add_player_card(window: Widget, path, n):
@@ -48,12 +64,12 @@ def add_dealer_card(window: Widget, path, n):
     img = DealerCardImage(num = n, source = path)
     window.add_widget(img)
 
-def show_cards(window: Widget):
+def draw_screen(window: Widget):
     window.clear_widgets()
 
     global player, dealer
 
-    add_default_layout(window)
+    add_layout(window)
 
     for i in range(len(player.get_cards())):
         add_player_card(window, player.get_cards()[i].get_path(), i)
@@ -82,7 +98,7 @@ class BoutonReste (Button):
 class BoutonRecommencer (Button):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.bind(on_press = reset)
+        self.bind(on_press = restart_game)
 
 class PlayerCardImage (Image):
     def __init__(self, num, **kwargs):
@@ -98,6 +114,10 @@ class PlayerHandLabel (Label):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
+class PlayerScoreLabel (Label):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
 class DealerHandLabel (Label):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -105,7 +125,7 @@ class DealerHandLabel (Label):
 class BlackJackApp (App):
     def build (self):
         screen = MainScreen()
-        show_cards(screen)
+        draw_screen(screen)
         return screen
 
 pile = Pile()

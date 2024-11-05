@@ -13,6 +13,23 @@ class Player:
     
     def get_cards(self):
         return self.hand
+    
+    def check_score(self):
+        score = 0
+        n_as = 0
+        for card in self.get_cards():
+            if card.val in ["10", "valet", "dame", "roi"]:
+                score += 10
+            elif card.val == "as":
+                n_as += 1
+            else:
+                score += int(card.val)
+        for i in range(n_as):
+            if score + 11 > 21:
+                score += 1
+            else:
+                score += 11
+        return score
 
 class Card:
 
