@@ -9,12 +9,18 @@ class Player:
         return self.n + " - " + str(self.hand)
     
     def draw_card(self, pile):
+        """
+            Fait piocher une carte au joueur
+        """
         self.hand.append(pile.draw_card())
     
     def get_cards(self):
         return self.hand
     
-    def check_score(self):
+    def get_score(self):
+        """
+            Calcule le score du joueur
+        """
         score = 0
         n_as = 0
         for card in self.get_cards():
@@ -33,14 +39,17 @@ class Player:
 
 class Card:
 
-    def __init__ (self, charac):
-        self.val = charac[0]
-        self.col = charac[1]
+    def __init__ (self, info):
+        self.val = info[0]
+        self.col = info[1]
     
     def __repr__(self):
         return str(self.val) + "_" + self.col
     
     def get_path(self):
+        """
+            Renvoie le chemin d'accés de l'image liée à la carte
+        """
         name = str(self.val) + "_" + self.col
         path = "img/" + name + ".gif"
         return path
@@ -48,6 +57,9 @@ class Card:
 class Pile:
 
     def __init__ (self):
+        """
+            Initialise le paquet de jeu
+        """
         col = ["carreau", "coeur", "pique", "trefle"]
         num = ["as", "2", "3", "4", "5", "6", "7", "8", "9", "10", "valet", "dame", "roi"]
         l = []
@@ -60,5 +72,8 @@ class Pile:
         return str(self.con)
     
     def draw_card(self):
+        """
+            Pioche une carte
+        """
         return self.con.pop() if len(self.con) > 0 else None
 
