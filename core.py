@@ -12,6 +12,7 @@ class Player:
         """
             Fait piocher une carte au joueur
         """
+
         self.hand.append(pile.draw_card())
     
     def get_cards(self):
@@ -21,6 +22,7 @@ class Player:
         """
             Calcule le score du joueur
         """
+
         score = 0
         n_as = 0
         for card in self.get_cards():
@@ -50,6 +52,7 @@ class Card:
         """
             Renvoie le chemin d'accés de l'image liée à la carte
         """
+
         name = str(self.val) + "_" + self.col
         path = "img/" + name + ".gif"
         return path
@@ -60,6 +63,7 @@ class Pile:
         """
             Initialise le paquet de jeu
         """
+
         col = ["carreau", "coeur", "pique", "trefle"]
         num = ["as", "2", "3", "4", "5", "6", "7", "8", "9", "10", "valet", "dame", "roi"]
         l = []
@@ -73,7 +77,8 @@ class Pile:
     
     def draw_card(self):
         """
-            Pioche une carte
+            Renvoie une carte du paquet, en la suprimant de ce dernier
         """
+
         return self.con.pop() if len(self.con) > 0 else None
 

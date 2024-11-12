@@ -1,6 +1,7 @@
 ####   Imports   ####
 
 from core import Pile, Player
+from time import sleep
 
 from kivy.app import App
 from kivy.uix.widget import Widget
@@ -10,68 +11,97 @@ from kivy.uix.label import Label
 
 # Définition de la taille de la fenêtre
 from kivy.config import Config
-Config.set('graphics', 'width', '600')
+Config.set('graphics', 'width', '610')
 Config.set('graphics', 'height', '400')
 
 ####   Fonctions de logique   ####
+
+# Fonctions des boutons #
 
 def player_draw_card(instance: Widget):
     """
         Quand l'utilisateur clique sur le boutton 'Tirer'
     """
-    global player, pile
-    player.draw_card(pile)
 
-    draw_screen(instance.parent)
+    if is_playing:
+        global player, pile
+        player.draw_card(pile)
+
+        draw_screen(instance.parent)
 
 def player_stop(instance: Widget):
     """
         Quand l'utilisateur clique sur le boutton 'Rester'
     """
-    global is_playing
-    is_playing = 0
 
-    draw_screen(instance.parent)
+    global is_playing, dealer, player
+    if is_playing:
+        is_playing = False
+        window = instance.parent
+        
+        # Tour du croupier
+        if dealer.get_score() == 21:
+            window.add_widget(ResultLabel(text = "Vous avez perdu, dommage !"))
+        else:
+            while dealer.get_score() < 17:
+                dealer_draw_card()
+            draw_screen(window)
 
-def restart_game(instance: Widget):
-    """
-        Quand l'utilisateur clique sur le boutton 'Nouvelle partie'
-        Réinitialise le paquet de carte, ainsi que les mains du joueur et du croupier
-    """
-    global pile, player, is_playing, dealer
+def next_round(instance: Widget):
+    pass
 
-    pile = Pile()
-    player = Player()
-    is_playing = 1
-    dealer = Player()
+# Fonctions de logique générale #
 
-    player.draw_card(pile)
+def check_win():
+    global player, dealer, player_win, dealer_win, is_playing
+
+    p_score =  player.get_score()
+    d_score = dealer.get_score()
+
+    if p_score > 21:
+        dealer_win = True
+    elif d_score > 21:
+        player_win = True
+    elif is_playing == False:
+        if d_score > p_score:
+            dealer_win = True
+        elif p_score > d_score:
+            player_win = True
+        elif p_score == d_score:
+            player_win = True
+            dealer_win = True
+
+def dealer_draw_card():
+    global dealer, pile
     dealer.draw_card(pile)
-    player.draw_card(pile)
-    dealer.draw_card(pile)
-
-    draw_screen(instance.parent)
 
 def add_layout(window: Widget):
     """
-        Ajoute tout les éléments autres que les cartes à le fenêtre
+        Ajoute tout les éléments autres que les cartes à la fenêtre
     """
-    player_score = player.check_score()
-    if player_score > 21:
-        pass
-    elif player_score == 21:
-        if len(player.get_cards) == 2:
-            pass
-        else:
-            pass
-    else:
-        player_score_text = "Score: " + str(player_score)
 
-    window.add_widget(BoutonPioche(text = "Tirer"))
-    window.add_widget(BoutonReste(text = "Rester"))
-    window.add_widget(BoutonRecommencer(text = "Nouvelle partie"))
+    check_win()
+
+    player_score = player.get_score()
+    player_score_text = "Score joueur: " + str(player_score)
+    dealer_score = dealer.get_score()
+    dealer_score_text = "Score croupier: " + str(dealer_score)
+
+    if player_win and dealer_win:
+        window.add_widget(ResultLabel(text = "Egalité !"))
+    elif player_win:
+        window.add_widget(ResultLabel(text = "Vous avez gagné, bravo !"))
+    elif dealer_win:
+        window.add_widget(ResultLabel(text = "Vous avez perdu, dommage !"))
+
+    window.add_widget(BoutonPiocher(text = "Tirer"))
+    window.add_widget(BoutonRester(text = "Rester"))
+    window.add_widget(BoutonProchaineManche(text = "Prochaine manche"))
+    window.add_widget(BoutonQuitter(text = "Quitter"))
     window.add_widget(PlayerHandLabel(text = "Main du joueur : "))
     window.add_widget(PlayerScoreLabel(text = player_score_text))
+    if not is_playing:
+        window.add_widget(DealerScoreLabel(text = dealer_score_text))
     window.add_widget(DealerHandLabel(text = "Main du croupier : "))
 
 def add_player_card(window: Widget, path, n):
@@ -79,6 +109,7 @@ def add_player_card(window: Widget, path, n):
         Ajoute une carte de la main du joueur à la fenêtre
         Prend en paramètre le chemin de l'image et le numéro de la carte (pour le décalage)
     """
+
     img = PlayerCardImage(num = n, source = path)
     window.add_widget(img)
 
@@ -87,6 +118,7 @@ def add_dealer_card(window: Widget, path, n):
         Ajoute une carte de la main du croupier à la fenêtre
         Prend en paramètre le chemin de l'image et le numéro de la carte (pour le décalage)
     """
+
     img = DealerCardImage(num = n, source = path)
     window.add_widget(img)
 
@@ -94,16 +126,19 @@ def draw_screen(window: Widget):
     """
         Ajoute à la fenêtre tout ce qui doit être affiché
     """
-    window.clear_widgets()
 
     global player, dealer
 
+    window.clear_widgets()
+
     add_layout(window)
 
+    # Affichage dess cartes du joueur
     for i in range(len(player.get_cards())):
         add_player_card(window, player.get_cards()[i].get_path(), i)
     
-    if is_playing:
+    # Affichage des cartes du croupier
+    if is_playing: # N'affiche que la première carte si le joueur pioche toujours
         add_dealer_card(window, dealer.get_cards()[0].get_path(), 0)
         add_dealer_card(window, "img/dos.gif", 1)
     else:
@@ -116,20 +151,25 @@ class MainScreen (Widget):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-class BoutonPioche (Button):
+class BoutonPiocher (Button):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.bind(on_press = player_draw_card)
 
-class BoutonReste (Button):
+class BoutonRester(Button):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.bind(on_press = player_stop)
 
-class BoutonRecommencer (Button):
+class BoutonProchaineManche(Button):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.bind(on_press = restart_game)
+        self.bind(on_press = next_round)
+
+class BoutonQuitter (Button):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.bind(on_press = exit)
 
 class PlayerCardImage (Image): # Widget pour les cartes du joueur
     def __init__(self, num, **kwargs):
@@ -153,18 +193,29 @@ class DealerHandLabel (Label):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
+class DealerScoreLabel (Label):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+class ResultLabel (Label):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
 class BlackJackApp (App): # Class de l'app principale
     def build (self):
-        screen = MainScreen()
-        draw_screen(screen)
-        return screen
+        window = MainScreen()
+        draw_screen(window)
+        return window
 
 
 ####   Set-up original   ####
 pile = Pile()
 player = Player()
-is_playing = 1
 dealer = Player()
+
+is_playing = True
+player_win = False
+dealer_win = False
 
 player.draw_card(pile)
 dealer.draw_card(pile)
