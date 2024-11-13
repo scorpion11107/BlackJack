@@ -81,4 +81,10 @@ class Pile:
         """
 
         return self.con.pop() if len(self.con) > 0 else None
+    
+    def get_cards_left(self):
+        """
+            Renvoie le nombre de cartes restantes dans le paquet
+        """
+        return len(self.con)
 

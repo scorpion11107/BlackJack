@@ -1,7 +1,6 @@
 ####   Imports   ####
 
 from core import Pile, Player
-from time import sleep
 
 from kivy.app import App
 from kivy.uix.widget import Widget
@@ -27,7 +26,7 @@ def player_draw_card(instance: Widget):
         global player, pile
         player.draw_card(pile)
 
-        draw_screen(instance.parent)
+        draw_screen()
 
 def player_stop(instance: Widget):
     """
@@ -37,7 +36,6 @@ def player_stop(instance: Widget):
     global is_playing, dealer, player
     if is_playing:
         is_playing = False
-        window = instance.parent
         
         # Tour du croupier
         if dealer.get_score() == 21:
@@ -45,14 +43,27 @@ def player_stop(instance: Widget):
         else:
             while dealer.get_score() < 17:
                 dealer_draw_card()
-            draw_screen(window)
+            draw_screen()
 
 def next_round(instance: Widget):
-    pass
+    global player, dealer, is_playing, player_win, dealer_win
+    player = Player()
+    dealer = Player()
+
+    is_playing = True
+    player_win = False
+    dealer_win = False
+
+    player.draw_card(pile)
+    dealer.draw_card(pile)
+    player.draw_card(pile)
+    dealer.draw_card(pile)
+
+    draw_screen()
 
 # Fonctions de logique générale #
 
-def check_win():
+def check_score():
     global player, dealer, player_win, dealer_win, is_playing
 
     p_score =  player.get_score()
@@ -60,8 +71,7 @@ def check_win():
 
     if p_score > 21:
         dealer_win = True
-    elif d_score > 21:
-        player_win = True
+        is_playing = False
     elif is_playing == False:
         if d_score > p_score:
             dealer_win = True
@@ -75,12 +85,12 @@ def dealer_draw_card():
     global dealer, pile
     dealer.draw_card(pile)
 
-def add_layout(window: Widget):
+def add_layout():
     """
         Ajoute tout les éléments autres que les cartes à la fenêtre
     """
 
-    check_win()
+    check_score()
 
     player_score = player.get_score()
     player_score_text = "Score joueur: " + str(player_score)
@@ -100,9 +110,10 @@ def add_layout(window: Widget):
     window.add_widget(BoutonQuitter(text = "Quitter"))
     window.add_widget(PlayerHandLabel(text = "Main du joueur : "))
     window.add_widget(PlayerScoreLabel(text = player_score_text))
+    window.add_widget(DealerHandLabel(text = "Main du croupier : "))
     if not is_playing:
         window.add_widget(DealerScoreLabel(text = dealer_score_text))
-    window.add_widget(DealerHandLabel(text = "Main du croupier : "))
+    window.add_widget(CardsLeftLabel(text = "Cartes restantes: " + str(pile.get_cards_left())))
 
 def add_player_card(window: Widget, path, n):
     """
@@ -122,7 +133,7 @@ def add_dealer_card(window: Widget, path, n):
     img = DealerCardImage(num = n, source = path)
     window.add_widget(img)
 
-def draw_screen(window: Widget):
+def draw_screen():
     """
         Ajoute à la fenêtre tout ce qui doit être affiché
     """
@@ -131,7 +142,7 @@ def draw_screen(window: Widget):
 
     window.clear_widgets()
 
-    add_layout(window)
+    add_layout()
 
     # Affichage dess cartes du joueur
     for i in range(len(player.get_cards())):
@@ -201,10 +212,15 @@ class ResultLabel (Label):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
+class CardsLeftLabel (Label):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
 class BlackJackApp (App): # Class de l'app principale
     def build (self):
+        global window
         window = MainScreen()
-        draw_screen(window)
+        draw_screen()
         return window
 
 
