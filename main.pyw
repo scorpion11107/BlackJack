@@ -3,6 +3,7 @@
 from core import Pile, Player
 
 from kivy.app import App
+from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.widget import Widget
 from kivy.uix.button import Button
 from kivy.uix.image import Image
@@ -17,7 +18,7 @@ Config.set('graphics', 'height', '400')
 
 # Fonctions des boutons #
 
-def player_draw_card(instance: Widget):
+def player_draw_card(instance):
     """
         Quand l'utilisateur clique sur le boutton 'Tirer'
     """
@@ -28,7 +29,7 @@ def player_draw_card(instance: Widget):
 
         draw_screen()
 
-def player_stop(instance: Widget):
+def player_stop(instance):
     """
         Quand l'utilisateur clique sur le boutton 'Rester'
     """
@@ -45,7 +46,7 @@ def player_stop(instance: Widget):
                 dealer_draw_card()
             draw_screen()
 
-def next_round(instance: Widget):
+def next_round(instance):
     global player, dealer, is_playing, player_win, dealer_win
     player = Player()
     dealer = Player()
@@ -158,7 +159,7 @@ def draw_screen():
 
 ####   Classes graphiques ####
 
-class MainScreen (Widget):
+class MainScreen (FloatLayout):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
