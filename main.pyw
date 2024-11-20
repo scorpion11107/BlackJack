@@ -4,7 +4,6 @@ from core import Pile, Player
 
 from kivy.app import App
 from kivy.uix.floatlayout import FloatLayout
-from kivy.uix.widget import Widget
 from kivy.uix.button import Button
 from kivy.uix.image import Image
 from kivy.uix.label import Label
@@ -39,12 +38,10 @@ def player_stop(instance):
         is_playing = False
         
         # Tour du croupier
-        if dealer.get_score() == 21:
-            window.add_widget(ResultLabel(text = "Vous avez perdu, dommage !"))
-        else:
-            while dealer.get_score() < 17:
-                dealer_draw_card()
-            draw_screen()
+        while dealer.get_score() < 17:
+            dealer_draw_card()
+        
+        draw_screen()
 
 def next_round(instance):
     global player, dealer, is_playing, player_win, dealer_win
@@ -73,6 +70,8 @@ def check_score():
     if p_score > 21:
         dealer_win = True
         is_playing = False
+    elif d_score > 21:
+        player_win = True
     elif is_playing == False:
         if d_score > p_score:
             dealer_win = True
@@ -115,8 +114,9 @@ def add_layout():
     if not is_playing:
         window.add_widget(DealerScoreLabel(text = dealer_score_text))
     window.add_widget(CardsLeftLabel(text = "Cartes restantes: " + str(pile.get_cards_left())))
+    window.add_widget(CardsLeftBeforeMixLabel(text = "Avant mélange: " + str(pile.get_cards_left() - 77)))
 
-def add_player_card(window: Widget, path, n):
+def add_player_card(path, n):
     """
         Ajoute une carte de la main du joueur à la fenêtre
         Prend en paramètre le chemin de l'image et le numéro de la carte (pour le décalage)
@@ -125,7 +125,7 @@ def add_player_card(window: Widget, path, n):
     img = PlayerCardImage(num = n, source = path)
     window.add_widget(img)
 
-def add_dealer_card(window: Widget, path, n):
+def add_dealer_card(path, n):
     """
         Ajoute une carte de la main du croupier à la fenêtre
         Prend en paramètre le chemin de l'image et le numéro de la carte (pour le décalage)
@@ -147,15 +147,15 @@ def draw_screen():
 
     # Affichage dess cartes du joueur
     for i in range(len(player.get_cards())):
-        add_player_card(window, player.get_cards()[i].get_path(), i)
+        add_player_card(player.get_cards()[i].get_path(), i)
     
     # Affichage des cartes du croupier
     if is_playing: # N'affiche que la première carte si le joueur pioche toujours
-        add_dealer_card(window, dealer.get_cards()[0].get_path(), 0)
-        add_dealer_card(window, "img/dos.gif", 1)
+        add_dealer_card(dealer.get_cards()[0].get_path(), 0)
+        add_dealer_card("img/dos.gif", 1)
     else:
         for i in range(len(dealer.get_cards())):
-            add_dealer_card(window, dealer.get_cards()[i].get_path(), i)
+            add_dealer_card(dealer.get_cards()[i].get_path(), i)
 
 ####   Classes graphiques ####
 
@@ -214,6 +214,10 @@ class ResultLabel (Label):
         super().__init__(**kwargs)
 
 class CardsLeftLabel (Label):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+class CardsLeftBeforeMixLabel (Label):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 

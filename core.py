@@ -60,6 +60,12 @@ class Card:
 class Pile:
 
     def __init__ (self):
+        self.create_pile()
+    
+    def __repr__ (self):
+        return str(self.con)
+    
+    def create_pile(self):
         """
             Initialise le paquet de jeu
         """
@@ -72,19 +78,23 @@ class Pile:
                 l.append((i, j))
         self.con = [Card(elt) for elt in sample(6*l, 6*len(l))]
     
-    def __repr__ (self):
-        return str(self.con)
-    
     def draw_card(self):
         """
             Renvoie une carte du paquet, en la suprimant de ce dernier
         """
-
         return self.con.pop() if len(self.con) > 0 else None
     
     def get_cards_left(self):
         """
             Renvoie le nombre de cartes restantes dans le paquet
         """
+        self.check_pile()
         return len(self.con)
+    
+    def check_pile(self):
+        """
+            Remélange le paquet de carte si il reste moins de 25% des cartes
+        """
+        if len(self.con) < 77:
+            self.create_pile()
 
