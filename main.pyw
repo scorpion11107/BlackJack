@@ -23,8 +23,8 @@ def player_draw_card(instance):
     """
 
     if is_playing:
-        global player, pile
-        player.draw_card(pile)
+        global pl, pile
+        pl.draw_card(pile)
 
         draw_screen()
 
@@ -33,57 +33,57 @@ def player_stop(instance):
         Quand l'utilisateur clique sur le boutton 'Rester'
     """
 
-    global is_playing, dealer, player
+    global is_playing, dl, pl
     if is_playing:
         is_playing = False
         
         # Tour du croupier
-        while dealer.get_score() < 17:
+        while dl.get_score() < 17:
             dealer_draw_card()
         
         draw_screen()
 
 def next_round(instance):
-    global player, dealer, is_playing, player_win, dealer_win
-    player = Player()
-    dealer = Player()
+    global pl, dl, is_playing, pl_win, dl_win
+    pl = Player()
+    dl = Player()
 
     is_playing = True
-    player_win = False
-    dealer_win = False
+    pl_win = False
+    dl_win = False
 
-    player.draw_card(pile)
-    dealer.draw_card(pile)
-    player.draw_card(pile)
-    dealer.draw_card(pile)
+    pl.draw_card(pile)
+    dl.draw_card(pile)
+    pl.draw_card(pile)
+    dl.draw_card(pile)
 
     draw_screen()
 
 # Fonctions de logique générale #
 
 def check_score():
-    global player, dealer, player_win, dealer_win, is_playing
+    global pl, dl, pl_win, dl_win, is_playing
 
-    p_score =  player.get_score()
-    d_score = dealer.get_score()
+    p_score =  pl.get_score()
+    d_score = dl.get_score()
 
     if p_score > 21:
-        dealer_win = True
+        dl_win = True
         is_playing = False
     elif d_score > 21:
-        player_win = True
+        pl_win = True
     elif is_playing == False:
         if d_score > p_score:
-            dealer_win = True
+            dl_win = True
         elif p_score > d_score:
-            player_win = True
+            pl_win = True
         elif p_score == d_score:
-            player_win = True
-            dealer_win = True
+            pl_win = True
+            dl_win = True
 
 def dealer_draw_card():
-    global dealer, pile
-    dealer.draw_card(pile)
+    global dl, pile
+    dl.draw_card(pile)
 
 def add_layout():
     """
@@ -92,16 +92,16 @@ def add_layout():
 
     check_score()
 
-    player_score = player.get_score()
-    player_score_text = "Score joueur: " + str(player_score)
-    dealer_score = dealer.get_score()
-    dealer_score_text = "Score croupier: " + str(dealer_score)
+    p_score = pl.get_score()
+    p_score_txt = "Score joueur: " + str(p_score)
+    d_score = dl.get_score()
+    d_score_txt = "Score croupier: " + str(d_score)
 
-    if player_win and dealer_win:
+    if pl_win and dl_win:
         window.add_widget(ResultLabel(text = "Egalité !"))
-    elif player_win:
+    elif pl_win:
         window.add_widget(ResultLabel(text = "Vous avez gagné, bravo !"))
-    elif dealer_win:
+    elif dl_win:
         window.add_widget(ResultLabel(text = "Vous avez perdu, dommage !"))
 
     window.add_widget(BoutonPiocher(text = "Tirer"))
@@ -109,10 +109,10 @@ def add_layout():
     window.add_widget(BoutonProchaineManche(text = "Prochaine manche"))
     window.add_widget(BoutonQuitter(text = "Quitter"))
     window.add_widget(PlayerHandLabel(text = "Main du joueur : "))
-    window.add_widget(PlayerScoreLabel(text = player_score_text))
+    window.add_widget(PlayerScoreLabel(text = p_score_txt))
     window.add_widget(DealerHandLabel(text = "Main du croupier : "))
     if not is_playing:
-        window.add_widget(DealerScoreLabel(text = dealer_score_text))
+        window.add_widget(DealerScoreLabel(text = d_score_txt))
     window.add_widget(CardsLeftLabel(text = "Cartes restantes: " + str(pile.get_cards_left())))
     window.add_widget(CardsLeftBeforeMixLabel(text = "Avant mélange: " + str(pile.get_cards_left() - 77)))
 
@@ -139,23 +139,23 @@ def draw_screen():
         Ajoute à la fenêtre tout ce qui doit être affiché
     """
 
-    global player, dealer
+    global pl, dl
 
     window.clear_widgets()
 
     add_layout()
 
     # Affichage dess cartes du joueur
-    for i in range(len(player.get_cards())):
-        add_player_card(player.get_cards()[i].get_path(), i)
+    for i in range(len(pl.get_cards())):
+        add_player_card(pl.get_cards()[i].get_path(), i)
     
     # Affichage des cartes du croupier
     if is_playing: # N'affiche que la première carte si le joueur pioche toujours
-        add_dealer_card(dealer.get_cards()[0].get_path(), 0)
+        add_dealer_card(dl.get_cards()[0].get_path(), 0)
         add_dealer_card("img/dos.gif", 1)
     else:
-        for i in range(len(dealer.get_cards())):
-            add_dealer_card(dealer.get_cards()[i].get_path(), i)
+        for i in range(len(dl.get_cards())):
+            add_dealer_card(dl.get_cards()[i].get_path(), i)
 
 ####   Classes graphiques ####
 
@@ -231,17 +231,17 @@ class BlackJackApp (App): # Class de l'app principale
 
 ####   Set-up original   ####
 pile = Pile()
-player = Player()
-dealer = Player()
+pl = Player()
+dl = Player()
 
 is_playing = True
-player_win = False
-dealer_win = False
+pl_win = False
+dl_win = False
 
-player.draw_card(pile)
-dealer.draw_card(pile)
-player.draw_card(pile)
-dealer.draw_card(pile)
+pl.draw_card(pile)
+dl.draw_card(pile)
+pl.draw_card(pile)
+dl.draw_card(pile)
 
 BlackJackApp().run()
 
